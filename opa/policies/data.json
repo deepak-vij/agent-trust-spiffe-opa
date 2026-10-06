@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "spiffe://example.org/agent-a": {
+      "spiffe://example.org/agent-b": ["research", "summarize"]
+    }
+  }
+}
