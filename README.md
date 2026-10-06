@@ -56,3 +56,6 @@ docker run --rm -v "$PWD/opa/policies:/p:ro" openpolicyagent/opa:1.9.0-static te
 - `opa/policies/authz.rego`: policy; `data.json`: permissions; `authz_test.rego`: unit tests
 - `agent/main.go`: Go agent (`MODE=server|client`) using `go-spiffe/v2`
 - `run.sh` / `teardown.sh`: bootstrap and cleanup
+
+## License
+Apache License 2.0. See [LICENSE](LICENSE).
