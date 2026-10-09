@@ -25,13 +25,14 @@ register() { # spiffe-id uid
 register spiffe://example.org/agent-a     1001
 register spiffe://example.org/agent-b     1002
 register spiffe://example.org/agent-rogue 1003
+register spiffe://example.org/token-service 1004
 
 echo "==> Starting SPIRE agent"
 docker compose up -d spire-agent
 
 echo "==> Building and starting agents"
-docker compose up -d --build opa agent-b agent-a agent-rogue
+docker compose up -d --build opa token-service agent-b agent-a agent-rogue
 
 echo
 echo "Done. Follow the conversation with:"
-echo "  docker compose logs -f agent-a agent-b agent-rogue"
+echo "  docker compose logs -f agent-a agent-b agent-rogue token-service"

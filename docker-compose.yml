@@ -25,18 +25,34 @@ services:
   # Workloads share the SPIRE agent's PID namespace so the unix attestor can
   # inspect the calling process (UID) behind each Workload API request.
 
+  # Issues delegation tokens: "agent X may act for user Y, on target Z, for
+  # one tool". Also stands in for the users' identity provider (demo only).
+  token-service:
+    build: ./agent
+    user: "1004"
+    pid: "service:spire-agent"
+    depends_on: [spire-agent, opa]
+    environment:
+      MODE: token-service
+      OPA_URL: http://opa:8181
+      DEMO_USERS: maria,alex
+    volumes:
+      - spire-sockets:/opt/spire/sockets:ro
+
   agent-b:   # "research agent" — the callee
     build: ./agent
     user: "1002"
     pid: "service:spire-agent"
-    depends_on: [spire-agent, opa]
+    depends_on: [spire-agent, opa, token-service]
     environment:
       MODE: server
       OPA_URL: http://opa:8181
+      TOKEN_SERVICE_URL: https://token-service:8443
+      TOKEN_SERVICE_ID: spiffe://example.org/token-service
     volumes:
       - spire-sockets:/opt/spire/sockets:ro
 
-  agent-a:   # "orchestrator agent" — granted some tools, not others
+  agent-a:   # "orchestrator agent" — acts on behalf of users
     build: ./agent
     user: "1001"
     pid: "service:spire-agent"
@@ -45,11 +61,14 @@ services:
       MODE: client
       TARGET_URL: https://agent-b:8443
       TARGET_ID: spiffe://example.org/agent-b
-      TOOLS: research,summarize,delete_records
+      TOKEN_SERVICE_URL: https://token-service:8443
+      TOKEN_SERVICE_ID: spiffe://example.org/token-service
+      # user:tool per call; empty user = no delegation token; ~forged = tampered token
+      CALLS: maria:research,maria:delete_records,alex:delete_records,:research,maria~forged:summarize
     volumes:
       - spire-sockets:/opt/spire/sockets:ro
 
-  agent-rogue:   # has a valid SVID, but no permissions in OPA
+  agent-rogue:   # has a valid SVID, but may not act for users
     build: ./agent
     user: "1003"
     pid: "service:spire-agent"
@@ -58,6 +77,9 @@ services:
       MODE: client
       TARGET_URL: https://agent-b:8443
       TARGET_ID: spiffe://example.org/agent-b
+      TOKEN_SERVICE_URL: https://token-service:8443
+      TOKEN_SERVICE_ID: spiffe://example.org/token-service
+      CALLS: maria:research
     volumes:
       - spire-sockets:/opt/spire/sockets:ro
 

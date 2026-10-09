@@ -1,7 +1,14 @@
 {
   "permissions": {
     "spiffe://example.org/agent-a": {
-      "spiffe://example.org/agent-b": ["research", "summarize"]
+      "spiffe://example.org/agent-b": ["research", "summarize", "delete_records"]
     }
+  },
+  "user_permissions": {
+    "maria": ["research", "summarize"],
+    "alex": ["research", "summarize", "delete_records"]
+  },
+  "delegation": {
+    "spiffe://example.org/agent-a": ["spiffe://example.org/agent-b"]
   }
 }
